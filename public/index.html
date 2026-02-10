@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Private Dialer</title>
+    
+    <!-- الخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AWaJQWw1WU4LOyK2j5jrSA34VWrSPXRXRX6KrTb2UP8yBQqVKk2fohlccSJ65IvQEKvV_KLwrO-dA5Xn&currency=USD"></script>
+    
+    <!-- Twilio Device SDK -->
+    <script src="https://media.twiliocdn.com/sdk/js/client/v1.17/twilio.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- شاشة الأذونات -->
+        <div id="permission-screen">
+            <div style="font-size: 3rem; color: var(--primary-color); margin-bottom: 20px;"><i class="fas fa-shield-alt"></i></div>
+            <h2 style="margin-bottom: 10px;">الأذونات المطلوبة</h2>
+            <p style="color: #666; margin-bottom: 30px;">يجب الموافقة على جميع الأذونات لتشغيل التطبيق قانونياً وفعلياً.</p>
+            <div class="perm-item" id="perm-mic"><span><i class="fas fa-microphone"></i> الوصول للميكروفون</span><i class="fas fa-times-circle" style="color: #ccc;"></i></div>
+            <div class="perm-item" id="perm-contacts"><span><i class="fas fa-address-book"></i> جهات الاتصال</span><i class="fas fa-times-circle" style="color: #ccc;"></i></div>
+            <div class="perm-item" id="perm-log"><span><i class="fas fa-history"></i> سجل المكالمات</span><i class="fas fa-times-circle" style="color: #ccc;"></i></div>
+            <button class="btn btn-primary" style="margin-top: 30px;" onclick="window.grantAllPermissions()">السماح بجميع الأذونات والمتابعة</button>
+        </div>
+
+        <!-- شاشة تسجيل الدخول -->
+        <div id="login-screen" class="hidden">
+            <div class="login-logo"><i class="fas fa-phone-alt"></i></div>
+            <h2>تسجيل الدخول</h2>
+            <p style="opacity: 0.8; margin-top: 5px;">Private Dialer</p>
+            <button class="btn login-btn" onclick="window.firebaseAuth.login()"><i class="fab fa-google"></i> Sign in with Google</button>
+            <label class="terms-check">
+                <input type="checkbox" id="terms-checkbox">
+                <span>أوافق على الشروط وسياسة الخصوصية</span>
+            </label>
+        </div>
+
+        <!-- واجهة الاتصال النشطة -->
+        <div id="screen-active-call">
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div class="caller-avatar"><i class="fas fa-user"></i></div>
+                <div class="caller-name" id="active-caller-name">Unknown</div>
+                <div class="caller-status" id="call-status-msg">جاري الاتصال...</div>
+                <div class="caller-timer" id="call-timer">00:00</div>
+            </div>
+            <div class="call-actions">
+                <button class="btn call-action-btn" onclick="window.toggleMute(this)"><i class="fas fa-microphone-slash"></i><span class="call-action-label">كتم</span></button>
+                <button class="btn call-action-btn" onclick="window.toggleKeypad(this)"><i class="fas fa-th"></i><span class="call-action-label">لوحة</span></button>
+                <button class="btn call-action-btn" onclick="window.toggleSpeaker(this)"><i class="fas fa-volume-up"></i><span class="call-action-label">سماعة</span></button>
+            </div>
+            <button class="btn end-call-btn" onclick="window.endCall()"><i class="fas fa-phone-slash"></i></button>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div id="main-app" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
+            <!-- 1. لوحة الاتصال -->
+            <section id="screen-keypad" class="page active">
+                <div class="keypad-header">
+                    <div class="status-indicator"><div class="dot"></div><span>متصل</span></div>
+                    <button class="btn balance-btn" id="main-balance-btn" onclick="window.navigateTo('page-topup')">$1.00 ></button>
+                    <div class="dial-display" id="dial-display"></div>
+                    <div class="keypad-controls">
+                        <div class="toggle-row">
+                            <div class="toggle-label">
+                                <label class="toggle-switch"><input type="checkbox" id="anon-toggle" onchange="window.toggleAliasInput()"><span class="slider"></span></label>
+                                <span>مجهول</span>
+                            </div>
+                            <div class="toggle-label">
+                                <label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label>
+                                <span>تسجيل</span>
+                            </div>
+                        </div>
+                        <div id="alias-input-wrapper"><input type="text" id="alias-input-field" placeholder="الاسم البديل..." oninput="window.updateAliasValue()"></div>
+                    </div>
+                </div>
+                <div class="keypad-grid">
+                    <button class="btn key-btn" onclick="window.dial('1')">1</button>
+                    <button class="btn key-btn" onclick="window.dial('2')">2<span>ABC</span></button>
+                    <button class="btn key-btn" onclick="window.dial('3')">3<span>DEF</span></button>
+                    <button class="btn key-btn" onclick="window.dial('4')">4<span>GHI</span></button>
+                    <button class="btn key-btn" onclick="window.dial('5')">5<span>JKL</span></button>
+                    <button class="btn key-btn" onclick="window.dial('6')">6<span>MNO</span></button>
+                    <button class="btn key-btn" onclick="window.dial('7')">7<span>PQRS</span></button>
+                    <button class="btn key-btn" onclick="window.dial('8')">8<span>TUV</span></button>
+                    <button class="btn key-btn" onclick="window.dial('9')">9<span>WXYZ</span></button>
+                    <button class="btn key-btn" onclick="window.dial('*')">*</button>
+                    <button class="btn key-btn" onclick="window.dial('0')">0<span>+</span></button>
+                    <button class="btn key-btn" onclick="window.dial('#')">#</button>
+                </div>
+                <div class="call-row">
+                    <button class="btn action-icon-btn" onclick="window.showToast('تمت الإضافة لجهات الاتصال')"><i class="fas fa-user-plus"></i></button>
+                    <button class="btn call-btn" onclick="window.initiateCall()"><i class="fas fa-phone"></i></button>
+                    <button class="btn action-icon-btn" onclick="window.deleteDigit()"><i class="fas fa-backspace"></i></button>
+                </div>
+            </section>
+        </div>
+        <div id="toast" class="toast"></div>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
