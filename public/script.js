@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- Firebase Config ---
 const firebaseConfig = {
@@ -16,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const functions = getFunctions(app);
+const db = getFirestore(app);
 
 const provider = new GoogleAuthProvider();
 
@@ -37,13 +39,44 @@ const appState = {
 // ==========================================
 // 0. Auth Listener
 // ==========================================
-onAuthStateChanged(auth, (user) => {
+let unsubscribeFirestore = null;
+
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log("User is logged in:", user.uid);
         window.updateUserState(user);
         window.updateProfileUI(user);
         
-        // الانتقال للواجهة الرئيسية إذا كان المستخدم في شاشة الدخول
+        // 1. التحقق من وجود مستند للمستخدم في Firestore
+        const userRef = doc(db, "users", user.uid);
+        try {
+            const userSnap = await getDoc(userRef);
+            if (!userSnap.exists()) {
+                // إنشاء مستند جديد برصيد افتراضي
+                await setDoc(userRef, {
+                    displayName: user.displayName,
+                    email: user.email,
+                    balance: 1.00,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            // 2. الاستماع للتغييرات في الرصيد في الوقت الفعلي
+            if (unsubscribeFirestore) unsubscribeFirestore();
+            unsubscribeFirestore = onSnapshot(userRef, (doc) => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    appState.balance = data.balance || 0;
+                    window.updateBalanceDisplay();
+                }
+            });
+
+        } catch (error) {
+            console.error("Firestore Error:", error);
+            window.showToast("خطأ في جلب بيانات الرصيد");
+        }
+
+        // الانتقال للواجهة الرئيسية
         const loginScreen = document.getElementById('login-screen');
         const mainApp = document.getElementById('main-app');
         const permissionScreen = document.getElementById('permission-screen');
@@ -58,6 +91,7 @@ onAuthStateChanged(auth, (user) => {
         }
     } else {
         console.log("User is logged out");
+        if (unsubscribeFirestore) unsubscribeFirestore();
         window.clearUserState();
         document.getElementById('main-app').classList.add('hidden');
         document.getElementById('login-screen').classList.remove('hidden');
@@ -216,18 +250,26 @@ window.endCall = function() {
     }
 };
 
-function endCallLogic() {
+async function endCallLogic() {
     clearInterval(appState.currentCallTimer);
     document.getElementById('screen-active-call').classList.remove('active');
     document.getElementById('dial-display').textContent = "";
     
     // حساب التكلفة
     const cost = appState.callSeconds * 0.01;
-    if (appState.callSeconds > 0) {
-        appState.balance -= cost;
-        window.updateBalanceDisplay();
-        window.updateReports();
-        window.showToast(`انتهت المكالمة. التكلفة: $${cost.toFixed(2)}`);
+    if (appState.callSeconds > 0 && appState.currentUser) {
+        const newBalance = appState.balance - cost;
+        
+        // تحديث Firestore بدلاً من الحالة المحلية فقط
+        try {
+            const userRef = doc(db, "users", appState.currentUser.uid);
+            await updateDoc(userRef, { balance: newBalance });
+            window.showToast(`انتهت المكالمة. التكلفة: $${cost.toFixed(2)}`);
+            window.updateReports();
+        } catch (error) {
+            console.error("Failed to update balance:", error);
+            window.showToast("فشل تحديث الرصيد في القاعدة");
+        }
     }
 }
 
