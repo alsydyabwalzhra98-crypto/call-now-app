@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
 
 // --- Firebase Config ---
@@ -35,6 +35,37 @@ const appState = {
 };
 
 // ==========================================
+// 0. Auth Listener
+// ==========================================
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log("User is logged in:", user.uid);
+        window.updateUserState(user);
+        window.updateProfileUI(user);
+        
+        // الانتقال للواجهة الرئيسية إذا كان المستخدم في شاشة الدخول
+        const loginScreen = document.getElementById('login-screen');
+        const mainApp = document.getElementById('main-app');
+        const permissionScreen = document.getElementById('permission-screen');
+
+        if (!loginScreen.classList.contains('hidden') || permissionScreen.style.display === 'none') {
+            loginScreen.style.opacity = '0';
+            setTimeout(() => {
+                loginScreen.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                window.initApp();
+            }, 300);
+        }
+    } else {
+        console.log("User is logged out");
+        window.clearUserState();
+        document.getElementById('main-app').classList.add('hidden');
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('login-screen').style.opacity = '1';
+    }
+});
+
+// ==========================================
 // 1. Firebase Auth (مستقر)
 // ==========================================
 window.firebaseAuth = {
@@ -47,14 +78,7 @@ window.firebaseAuth = {
 
         signInWithPopup(auth, provider)
             .then((result) => {
-                window.updateUserState(result.user);
-                window.updateProfileUI(result.user);
-                document.getElementById('login-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('main-app').classList.remove('hidden');
-                    window.initApp();
-                }, 300);
+                // تم إزالة الانتقال اليدوي هنا لأن المستمع (onAuthStateChanged) سيتولى الأمر تلقائياً
             })
             .catch((error) => {
                 console.error("Login Error", error);
