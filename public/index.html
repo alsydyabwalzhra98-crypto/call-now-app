@@ -815,26 +815,38 @@
         // ==========================================
         // تصدير الدوال للاستخدام في HTML (Global Scope)
         // ==========================================
-        window.grantAllPermissions = grantAllPermissions;
-        window.firebaseAuth = firebaseAuth;
-        window.switchMainTab = switchMainTab;
-        window.navigateTo = navigateTo;
-        window.goBack = goBack;
-        window.switchTabContent = switchTabContent;
-        window.dial = dial;
-        window.deleteDigit = deleteDigit;
-        window.toggleAliasInput = toggleAliasInput;
-        window.updateAliasValue = updateAliasValue;
-        window.initiateCall = initiateCall;
-        window.endCall = endCall;
-        window.toggleMute = toggleMute;
-        window.toggleKeypad = toggleKeypad;
-        window.toggleSpeaker = toggleSpeaker;
-        window.openCompose = openCompose;
-        window.closeCompose = closeCompose;
-        window.sendMessage = sendMessage;
-        window.processTransfer = processTransfer;
-        window.openWhatsApp = openWhatsApp;
+        // ==========================================
+        // تصدير الدوال للاستخدام في HTML (Global Scope)
+        // ==========================================
+        window.grantAllPermissions = App.grantAllPermissions;
+        window.firebaseAuth = App.firebaseAuth;
+        window.switchMainTab = App.switchMainTab;
+        window.navigateTo = App.navigateTo;
+        window.goBack = App.goBack;
+        window.switchTabContent = App.switchTabContent;
+        window.dial = App.dial;
+        window.deleteDigit = App.deleteDigit;
+        window.toggleAliasInput = App.toggleAliasInput;
+        window.updateAliasValue = App.updateAliasValue;
+        window.initiateCall = App.initiateCall;
+        window.endCall = App.endCall;
+        window.toggleMute = App.toggleMute;
+        window.toggleKeypad = App.toggleKeypad;
+        window.toggleSpeaker = App.toggleSpeaker;
+        window.openCompose = App.openCompose;
+        window.closeCompose = App.closeCompose;
+        window.sendMessage = App.sendMessage;
+        window.processTransfer = App.processTransfer;
+        window.openWhatsApp = App.openWhatsApp;
+    </script>
+    <script type="module">
+        import * as App from './script.js';
+        window.App = App;
+        // Bind to window for HTML onclick handlers
+        Object.keys(App).forEach(key => {
+            window[key] = App[key];
+        });
+        console.log("App Module Loaded");
     </script>
 </body>
 </html>

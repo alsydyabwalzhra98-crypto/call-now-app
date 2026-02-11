@@ -236,12 +236,14 @@ function initiateCall() {
 }
 
 function startCallTimer() {
+    console.log("Starting call timer...");
     appState.callSeconds = 0;
     appState.currentCallTimer = setInterval(() => {
         appState.callSeconds++;
         const mins = Math.floor(appState.callSeconds / 60).toString().padStart(2, '0');
         const secs = (appState.callSeconds % 60).toString().padStart(2, '0');
-        document.getElementById('call-timer').textContent = `${mins}:${secs}`;
+        const timerEl = document.getElementById('call-timer');
+        if (timerEl) timerEl.textContent = `${mins}:${secs}`;
     }, 1000);
 }
 
