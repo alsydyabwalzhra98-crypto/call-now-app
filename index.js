@@ -1,14 +1,15 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, 'public')));
+// هذا السطر يجعل السيرفر يقرأ الملفات من المجلد الرئيسي مباشرة
+app.use(express.static(__dirname));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running at http://0.0.0.0:${port}`);
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
