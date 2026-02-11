@@ -143,18 +143,27 @@ function initApp() {
 // 3. دوال الواجهة والتنقل
 // ==========================================
 function grantAllPermissions() {
+    console.log("Granting all permissions...");
     const btn = document.querySelector('#permission-screen button');
     btn.textContent = "جاري التحقق...";
     btn.disabled = true;
     setTimeout(() => {
         ['mic', 'contacts', 'log'].forEach(id => {
             const el = document.getElementById('perm-' + id);
-            el.classList.add('perm-granted');
-            el.querySelector('i').className = 'fas fa-check-circle';
+            if (el) {
+                el.classList.add('perm-granted');
+                const icon = el.querySelector('i.fa-times-circle');
+                if (icon) icon.className = 'fas fa-check-circle';
+            }
         });
         setTimeout(() => {
-            document.getElementById('permission-screen').style.display = 'none';
-            document.getElementById('login-screen').classList.remove('hidden');
+            const permScreen = document.getElementById('permission-screen');
+            const loginScreen = document.getElementById('login-screen');
+            if (permScreen) permScreen.style.display = 'none';
+            if (loginScreen) {
+                loginScreen.classList.remove('hidden');
+                loginScreen.style.opacity = '1';
+            }
         }, 800);
     }, 1000);
 }
@@ -223,10 +232,10 @@ function initiateCall() {
     document.getElementById('active-caller-name').textContent = displayName;
     document.getElementById('call-timer').textContent = "جاري الاتصال...";
     document.getElementById('screen-active-call').classList.add('active');
-    setTimeout(() => { document.getElementById('call-timer').textContent = "00:00"; startTimer(); }, 1500);
+    setTimeout(() => { document.getElementById('call-timer').textContent = "00:00"; startCallTimer(); }, 1500);
 }
 
-function startTimer() {
+function startCallTimer() {
     appState.callSeconds = 0;
     appState.currentCallTimer = setInterval(() => {
         appState.callSeconds++;
