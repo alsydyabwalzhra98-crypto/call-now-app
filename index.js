@@ -1,9 +1,8 @@
-// استيراد المكتبات الأساسية
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 1. إعدادات Firebase
+// --- 1. إعدادات Firebase ---
 const firebaseConfig = {
     apiKey: "AIzaSyD8hrO2kX1zXaA46PImzMGqOt4iTwhXKI0",
     authDomain: "call-now-24582.firebaseapp.com",
@@ -17,15 +16,15 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 2. إعدادات Twilio
+// --- 2. إعدادات Twilio ---
 const TWILIO_CREDS = {
     accountSid: "AC556940721ff0c319d28a2b7e89ee4b78",
     apiKeySid: "SKfdd4fe38d4b4a70a8bcc14e0fb128b79",
     apiKeySecret: "Tm50wjJYwoCoZ84iyifLKd7CdnkCGn6T",
-    // !!! استبدل هذا بالـ SID الخاص بك من موقع Twilio !!!
-    twimlAppSid: "APXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" 
+    twimlAppSid: "APXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" // ضع الـ SID الخاص بك هنا
 };
 
+// متغيرات الحالة
 let device = null;
 let activeConnection = null;
 let callTimerInterval = null;
@@ -33,40 +32,39 @@ let currentNumber = "";
 let callSeconds = 0;
 let currentUser = null;
 let currentBalance = 0;
+let aliasName = "";
 
 // ================= نظام إدارة الشاشات والأذونات =================
 
-// مراقبة حالة الدخول
+// مراقب حالة المستخدم
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
-        // المستخدم مسجل دخوله
-        document.getElementById('permissions-screen').style.display = 'none';
+        document.getElementById('permission-screen').style.display = 'none';
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
         
         loadUserProfile(user);
         loadCallHistory(user);
         initTwilio(user.uid);
+        renderDummyData(); // تحميل بيانات وهمية للواجهات غير المربوطة
+        initPayPal(); // تفعيل زر الدفع
     } else {
-        // المستخدم غير مسجل، نظهر الأذونات أولاً إذا لم تُمنح
         if(localStorage.getItem('permsGranted') === 'true') {
-             document.getElementById('permissions-screen').style.display = 'none';
+             document.getElementById('permission-screen').style.display = 'none';
              document.getElementById('login-screen').classList.remove('hidden');
         }
     }
 });
 
-// طلب الأذونات الحقيقية
-window.requestPermissions = async () => {
+// 1. طلب الأذونات
+window.grantAllPermissions = async () => {
     const btn = document.getElementById('btn-grant');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
     
     try {
-        // طلب إذن المايكروفون فعلياً من المتصفح
         await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        // تغيير الأيقونة للأخضر
         const icon = document.querySelector('#perm-mic .status-icon');
         icon.className = "status-icon fas fa-check-circle";
         icon.style.color = "#4CAF50";
@@ -74,7 +72,7 @@ window.requestPermissions = async () => {
         localStorage.setItem('permsGranted', 'true');
         
         setTimeout(() => {
-            document.getElementById('permissions-screen').style.display = 'none';
+            document.getElementById('permission-screen').style.display = 'none';
             if(!auth.currentUser) document.getElementById('login-screen').classList.remove('hidden');
         }, 1000);
         
@@ -85,8 +83,8 @@ window.requestPermissions = async () => {
     }
 };
 
-// تسجيل الدخول
-window.loginWithGoogle = () => {
+// 2. تسجيل الدخول
+window.handleLogin = () => {
     const check = document.getElementById('terms-checkbox');
     if(!check.checked) return showToast("يجب الموافقة على الشروط أولاً");
 
@@ -94,7 +92,7 @@ window.loginWithGoogle = () => {
     signInWithPopup(auth, provider).catch(err => showToast(err.message));
 };
 
-window.userLogout = () => signOut(auth).then(() => location.reload());
+window.handleLogout = () => signOut(auth).then(() => location.reload());
 
 // ================= البيانات والواجهة =================
 
@@ -107,14 +105,14 @@ function loadUserProfile(user) {
     onSnapshot(userRef, (docSnap) => {
         if (docSnap.exists()) {
             currentBalance = docSnap.data().balance;
-            document.getElementById('main-balance-btn').innerText = `$${currentBalance.toFixed(2)} >`;
+            const formatted = `$${currentBalance.toFixed(2)}`;
+            document.getElementById('main-balance-btn').innerText = formatted + " >";
         } else {
-            setDoc(userRef, { balance: 2.00, email: user.email }); // رصيد هدية
+            setDoc(userRef, { balance: 1.00, email: user.email });
         }
     });
 }
 
-// تحميل السجل من Firebase (بديل سجل الهاتف)
 async function loadCallHistory(user) {
     const q = query(collection(db, `users/${user.uid}/history`), orderBy("date", "desc"), limit(20));
     const querySnapshot = await getDocs(q);
@@ -139,6 +137,18 @@ async function loadCallHistory(user) {
     });
 }
 
+function renderDummyData() {
+    // جهات اتصال وهمية للتصميم
+    const contacts = ["أحمد محمد", "سارة علي", "العمل", "خالد", "أمي"];
+    document.getElementById('contacts-list').innerHTML = contacts.map(c => 
+        `<div class="list-item"><div class="more-icon" style="background:#eee;color:#555"><i class="fas fa-user"></i></div><div style="flex:1"><div style="font-weight:bold">${c}</div><div style="font-size:0.8rem;color:#777">05XXXXXXX</div></div></div>`
+    ).join('');
+    
+    // رسائل وهمية للتصميم
+    document.getElementById('messages-list').innerHTML = 
+        `<div class="list-item"><div class="more-icon" style="background:#eee;color:#555"><i class="fas fa-envelope"></i></div><div style="flex:1"><div style="font-weight:bold">الشركة</div><div style="font-size:0.8rem;color:#777">مرحباً بك في التطبيق...</div></div></div>`;
+}
+
 // ================= منطق الاتصال (Twilio) =================
 
 function generateToken(userUid) {
@@ -150,10 +160,7 @@ function generateToken(userUid) {
         sub: TWILIO_CREDS.accountSid,
         exp: now + 3600,
         grants: {
-            voice: {
-                outgoing: { application_sid: TWILIO_CREDS.twimlAppSid },
-                incoming: { allow: true }
-            },
+            voice: { outgoing: { application_sid: TWILIO_CREDS.twimlAppSid }, incoming: { allow: true } },
             identity: userUid
         }
     };
@@ -171,45 +178,39 @@ function initTwilio(uid) {
             ind.querySelector('span').innerText = "متصل بالشبكة";
             ind.querySelector('.dot').style.background = "#4CAF50";
         });
-
-        device.on('error', (err) => {
-            console.error(err);
-            if(err.code === 31205) showToast("تنبيه: تحقق من TwiML SID");
-        });
-
+        
+        device.on('error', (err) => { console.error(err); });
     } catch (e) { console.error(e); }
 }
 
-// التعامل مع لوحة المفاتيح
-window.addNumber = (num) => {
+// لوحة المفاتيح
+window.dial = (num) => {
     if (currentNumber.length < 15) {
         currentNumber += num;
         document.getElementById('dial-display').innerText = currentNumber;
     }
 };
 
-window.deleteNumber = () => {
+window.deleteDigit = () => {
     currentNumber = currentNumber.slice(0, -1);
     document.getElementById('dial-display').innerText = currentNumber;
 };
 
-// منطق الاسم المستعار
 window.toggleAliasInput = () => {
     const check = document.getElementById('anon-toggle');
     document.getElementById('alias-input-wrapper').style.display = check.checked ? 'block' : 'none';
 };
-let aliasName = "";
+
 window.updateAliasValue = () => aliasName = document.getElementById('alias-input-field').value;
 
 // إجراء المكالمة
-window.startCall = () => {
+window.initiateCall = () => {
     if (!currentNumber) return showToast("أدخل الرقم أولاً");
     if (!device) return showToast("جاري الاتصال بالسيرفر...");
     if (currentBalance <= 0) return showToast("رصيدك غير كافٍ");
 
     document.getElementById('screen-active-call').classList.add('active');
     
-    // إظهار الاسم المستعار إذا تم تفعيله، أو الرقم
     const displayName = (document.getElementById('anon-toggle').checked && aliasName) ? aliasName : currentNumber;
     document.getElementById('active-caller-name').innerText = displayName;
 
@@ -221,9 +222,7 @@ window.startCall = () => {
         startCallTimer();
     });
 
-    activeConnection.on('disconnect', () => {
-        endCall();
-    });
+    activeConnection.on('disconnect', () => endCall());
 };
 
 window.endCall = async () => {
@@ -231,12 +230,10 @@ window.endCall = async () => {
     document.getElementById('screen-active-call').classList.remove('active');
     stopCallTimer();
     
-    // حفظ المكالمة في السجل
     if (callSeconds > 0 && currentUser) {
-        const cost = (callSeconds / 60) * 0.10; // افتراض 10 سنت للدقيقة
+        const cost = (callSeconds / 60) * 0.10; 
         const newBal = currentBalance - cost;
         
-        // تحديث الرصيد والسجل في Firebase
         const userRef = doc(db, "users", currentUser.uid);
         await updateDoc(userRef, { balance: newBal });
         
@@ -248,7 +245,7 @@ window.endCall = async () => {
         });
         
         showToast(`تم خصم $${cost.toFixed(2)}`);
-        loadCallHistory(currentUser); // تحديث القائمة
+        loadCallHistory(currentUser);
     }
 
     callSeconds = 0;
@@ -276,13 +273,71 @@ function startCallTimer() {
 
 function stopCallTimer() { clearInterval(callTimerInterval); }
 
-// التنقل
-window.switchTab = (screenId, el) => {
+// ================= PayPal الدفع الحقيقي =================
+
+function initPayPal() {
+    if (window.paypal) {
+        const container = document.getElementById('paypal-button-container');
+        container.innerHTML = ""; 
+        
+        paypal.Buttons({
+            style: { layout: 'horizontal', color: 'blue', shape: 'rect', label: 'paypal', height: 40 },
+            createOrder: function(data, actions) {
+                const amount = document.getElementById('paypal-amount').value;
+                if(!amount || amount <= 0) { showToast("أدخل مبلغ صحيح"); return; }
+                return actions.order.create({
+                    purchase_units: [{ amount: { value: amount } }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(async function(details) {
+                    const amountPaid = parseFloat(details.purchase_units[0].amount.value);
+                    const newBal = currentBalance + amountPaid;
+                    
+                    // تحديث قاعدة بيانات Firebase
+                    const userRef = doc(db, "users", currentUser.uid);
+                    await updateDoc(userRef, { balance: newBal });
+                    
+                    showToast(`تم الشحن بنجاح: $${amountPaid}`);
+                    setTimeout(() => goBack(), 1500);
+                });
+            },
+            onError: (err) => showToast("فشلت عملية الدفع")
+        }).render('#paypal-button-container');
+    }
+}
+
+window.processTransfer = async () => {
+    const toID = document.getElementById('transfer-to').value;
+    const amount = parseFloat(document.getElementById('transfer-amount').value);
+    
+    if(!toID || amount <= 0) return showToast("بيانات خاطئة");
+    if(amount > currentBalance) return showToast("رصيد غير كافٍ");
+    
+    // ملاحظة: التحويل الحقيقي يتطلب البحث عن User ID للطرف الآخر، 
+    // هنا سنقوم فقط بخصم المبلغ من المرسل كمثال عملي.
+    const userRef = doc(db, "users", currentUser.uid);
+    await updateDoc(userRef, { balance: currentBalance - amount });
+    
+    showToast(`تم تحويل $${amount} بنجاح`);
+    goBack();
+};
+
+// ================= التنقل =================
+
+window.switchMainTab = (screenId, el) => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
 };
+
+window.navigateTo = (pageId) => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+};
+
+window.goBack = () => window.switchMainTab('screen-more', document.querySelectorAll('.nav-item')[3]);
 
 window.showToast = (msg) => {
     const t = document.getElementById('toast');
