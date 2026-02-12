@@ -3,162 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Private Dialer - Real App</title>
+    <title>Private Dialer</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://media.twiliocdn.com/sdk/js/client/v1.14/twilio.min.js"></script>
-    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
-
-    <style>
-        :root {
-            --primary-color: #1565C0;
-            --primary-dark: #0D47A1;
-            --primary-light: #E3F2FD;
-            --accent-green: #4CAF50;
-            --accent-red: #F44336;
-            --bg-color: #F5F5F5;
-            --white: #FFFFFF;
-            --text-dark: #333333;
-            --text-gray: #757575;
-            --border-radius: 12px;
-            --shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-
-        #app-container {
-            width: 100%; max-width: 400px; height: 100vh;
-            background-color: var(--bg-color); position: relative; overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2); display: flex; flex-direction: column;
-        }
-
-        .hidden { display: none !important; }
-        .btn { border: none; outline: none; cursor: pointer; font-family: inherit; transition: transform 0.1s; }
-        .btn:active { transform: scale(0.95); }
-        .page { flex: 1; overflow-y: auto; padding-bottom: 70px; display: none; background: var(--bg-color); }
-        .page.active { display: block; }
-
-        /* شاشة الأذونات */
-        #permission-screen {
-            position: absolute; inset: 0; background: var(--white); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 30px; text-align: center;
-        }
-
-        /* شاشة تسجيل الدخول (التصميم الأول) */
-        #login-screen {
-            position: absolute; inset: 0;
-            background: linear-gradient(135deg, var(--primary-color), #0D47A1);
-            z-index: 8000; color: var(--white);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 2rem; text-align: center;
-        }
-        .login-logo { font-size: 3rem; margin-bottom: 1rem; background: var(--white); color: var(--primary-color); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .login-btn { background-color: var(--white); color: #333; padding: 12px 24px; border-radius: 50px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-top: 2rem; width: 100%; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-
-        /* لوحة المفاتيح */
-        #screen-keypad { padding-top: 50px; text-align: center; }
-        .dial-display { font-size: 2.5rem; margin: 20px 0; height: 60px; color: var(--text-dark); }
-        .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 40px; }
-        .key-btn { background: var(--white); border: 1px solid #eee; border-radius: 50%; width: 70px; height: 70px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
-
-        /* شاشة الاتصال النشطة */
-        #screen-active-call {
-            position: absolute; inset: 0;
-            background: linear-gradient(to bottom, #1a237e, #000); z-index: 5000;
-            display: none; flex-direction: column; align-items: center; justify-content: center; color: white;
-        }
-        #screen-active-call.active { display: flex; }
-        .caller-timer { font-size: 2.5rem; color: var(--accent-green); margin: 20px 0; }
-        .end-call-btn { background: var(--accent-red); width: 75px; height: 75px; border-radius: 50%; color: white; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin-top: 40px; }
-
-        .bottom-nav { position: absolute; bottom: 0; width: 100%; height: 60px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; }
-        .toast { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 20px; opacity: 0; transition: 0.3s; z-index: 9000; }
-        .toast.show { opacity: 1; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="app-container">
-    <div id="permission-screen">
-        <i class="fas fa-shield-alt" style="font-size: 4rem; color: var(--primary-color); margin-bottom: 20px;"></i>
-        <h2 style="margin-bottom: 10px;">أهلاً بك</h2>
-        <p style="color: #666; margin-bottom: 30px;">نحتاج لإذن الميكروفون لتمكنك من إجراء المكالمات.</p>
-        <button class="btn btn-primary" style="background: var(--primary-color); color: white; padding: 15px 40px; border-radius: 30px; font-weight: bold;" onclick="window.requestRealPermissions()">ابدأ الآن</button>
+    <div id="permission-screen" style="padding: 30px; text-align: center; background: white; height: 100%;">
+        <i class="fas fa-shield-alt" style="font-size: 4rem; color: #1565C0; margin-top: 50px;"></i>
+        <h2 style="margin-top: 20px;">طلب إذن</h2>
+        <p>يرجى منح إذن الميكروفون للمتابعة</p>
+        <button onclick="window.requestRealPermissions()" style="background: #1565C0; color: white; padding: 15px 30px; border-radius: 30px; border: none; margin-top: 30px;">ابدأ الآن</button>
     </div>
 
     <div id="login-screen" class="hidden">
         <div class="login-logo"><i class="fas fa-phone-alt"></i></div>
-        <h2 style="margin-bottom: 10px;">تسجيل الدخول</h2>
-        <p style="opacity: 0.8;">سجل دخولك لبدء الاتصال وإدارة رصيدك</p>
-        
+        <h2>تسجيل الدخول</h2>
         <div style="margin-top: 20px;">
-            <input type="checkbox" id="terms-checkbox"> <span style="font-size: 0.8rem;">أوافق على الشروط والأحكام</span>
+            <input type="checkbox" id="terms-checkbox"> <span>أوافق على الشروط</span>
         </div>
-
-        <button class="login-btn btn" onclick="window.firebaseAuth.login()">
+        <button class="login-btn" onclick="window.firebaseAuth.login()">
             <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
             Sign in with Google
         </button>
     </div>
 
-    <div id="main-app" class="hidden" style="height: 100%;">
+    <div id="main-app" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
         <div id="screen-keypad" class="page active">
-            <div style="display: flex; justify-content: space-between; padding: 0 20px;">
-                <span id="balance-display" style="background: var(--primary-light); color: var(--primary-color); padding: 5px 15px; border-radius: 20px; font-weight: bold;">$0.00</span>
-                <span style="color: var(--accent-green); font-size: 0.9rem;"><i class="fas fa-circle" style="font-size: 0.6rem;"></i> متصل</span>
-            </div>
-            
+            <div id="balance-display" style="color: #1565C0; font-weight: bold; margin-bottom: 10px;">$0.00</div>
             <div id="dial-display" class="dial-display"></div>
-            
             <div class="keypad-grid">
-                <button class="key-btn btn" onclick="window.dial('1')">1</button>
-                <button class="key-btn btn" onclick="window.dial('2')">2</button>
-                <button class="key-btn btn" onclick="window.dial('3')">3</button>
-                <button class="key-btn btn" onclick="window.dial('4')">4</button>
-                <button class="key-btn btn" onclick="window.dial('5')">5</button>
-                <button class="key-btn btn" onclick="window.dial('6')">6</button>
-                <button class="key-btn btn" onclick="window.dial('7')">7</button>
-                <button class="key-btn btn" onclick="window.dial('8')">8</button>
-                <button class="key-btn btn" onclick="window.dial('9')">9</button>
-                <button class="key-btn btn" onclick="window.dial('*')">*</button>
-                <button class="key-btn btn" onclick="window.dial('0')">0</button>
-                <button class="key-btn btn" onclick="window.dial('#')">#</button>
+                <button class="key-btn" onclick="window.dial('1')">1</button>
+                <button class="key-btn" onclick="window.dial('2')">2</button>
+                <button class="key-btn" onclick="window.dial('3')">3</button>
+                <button class="key-btn" onclick="window.dial('4')">4</button>
+                <button class="key-btn" onclick="window.dial('5')">5</button>
+                <button class="key-btn" onclick="window.dial('6')">6</button>
+                <button class="key-btn" onclick="window.dial('7')">7</button>
+                <button class="key-btn" onclick="window.dial('8')">8</button>
+                <button class="key-btn" onclick="window.dial('9')">9</button>
+                <button class="key-btn" onclick="window.dial('*')">*</button>
+                <button class="key-btn" onclick="window.dial('0')">0</button>
+                <button class="key-btn" onclick="window.dial('#')">#</button>
             </div>
-
-            <div style="margin-top: 30px; display: flex; justify-content: center; gap: 30px; align-items: center;">
-                <button class="btn" style="color: var(--primary-color); font-size: 1.5rem;" onclick="window.deleteDigit()"><i class="fas fa-backspace"></i></button>
-                <button onclick="window.makeRealCall()" style="background: var(--accent-green); color: white; width: 75px; height: 75px; border-radius: 50%; font-size: 2rem; box-shadow: 0 5px 15px rgba(76,175,80,0.4);" class="btn"><i class="fas fa-phone"></i></button>
-                <button class="btn" style="color: var(--primary-color); font-size: 1.5rem;"><i class="fas fa-user-plus"></i></button>
+            <div style="margin-top: 30px;">
+                <button onclick="window.makeRealCall()" style="background: #4CAF50; color: white; width: 70px; height: 70px; border-radius: 50%; border: none; font-size: 1.5rem;"><i class="fas fa-phone"></i></button>
+                <button onclick="window.deleteDigit()" style="margin-right: 20px; border: none; background: none; font-size: 1.5rem;"><i class="fas fa-backspace"></i></button>
             </div>
         </div>
-        
+
         <div id="screen-active-call">
-            <div style="font-size: 4rem; margin-bottom: 20px;"><i class="fas fa-user-circle"></i></div>
-            <h2 id="call-number" style="font-size: 2rem;"></h2>
-            <p id="call-status" style="opacity: 0.7;">جاري الاتصال...</p>
+            <h2 id="call-number"></h2>
             <div id="timer" class="caller-timer">00:00</div>
-            
-            <button onclick="window.hangUp()" class="end-call-btn btn"><i class="fas fa-phone-slash"></i></button>
+            <button onclick="window.hangUp()" class="end-call-btn"><i class="fas fa-phone-slash"></i></button>
         </div>
 
         <nav class="bottom-nav">
             <div class="nav-item active"><i class="fas fa-th"></i></div>
-            <div class="nav-item" onclick="window.showToast('قريباً')"><i class="fas fa-history"></i></div>
-            <div class="nav-item" onclick="window.showToast('قريباً')"><i class="fas fa-user"></i></div>
+            <div class="nav-item"><i class="fas fa-user"></i></div>
         </nav>
     </div>
-    
-    <div id="toast" class="toast"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD8hrO2kX1zXaA46PImzMGqOt4iTwhXKI0",
@@ -181,66 +95,29 @@
                 if (user) setupUser(user);
                 else document.getElementById('login-screen').classList.remove('hidden');
             });
-        } catch (err) {
-            alert("يرجى منح إذن الميكروفون من إعدادات المتصفح للمتابعة.");
-        }
+        } catch (e) { alert("يجب منح إذن الميكروفون"); }
     };
 
     window.firebaseAuth = {
         login: () => {
-            if(!document.getElementById('terms-checkbox').checked) {
-                window.showToast("يرجى الموافقة على الشروط أولاً");
-                return;
-            }
-            signInWithPopup(auth, new GoogleAuthProvider()).then((res) => setupUser(res.user)).catch(e => alert(e.message));
+            if(!document.getElementById('terms-checkbox').checked) return alert("وافق على الشروط");
+            signInWithPopup(auth, new GoogleAuthProvider()).then(res => setupUser(res.user));
         }
     };
 
-    async function setupUser(user) {
+    function setupUser(user) {
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
-        const userRef = doc(db, "users", user.uid);
-        onSnapshot(userRef, (s) => {
-            if (s.exists()) document.getElementById('balance-display').innerText = `$${s.data().balance.toFixed(2)}`;
-            else setDoc(userRef, { balance: 1.00, email: user.email });
+        onSnapshot(doc(db, "users", user.uid), (s) => {
+            if(s.exists()) document.getElementById('balance-display').innerText = `$${s.data().balance.toFixed(2)}`;
+            else setDoc(doc(db, "users", user.uid), { balance: 1.00 });
         });
     }
 
     window.dial = (n) => document.getElementById('dial-display').innerText += n;
-    window.deleteDigit = () => {
-        const d = document.getElementById('dial-display');
-        d.innerText = d.innerText.slice(0, -1);
-    };
-
-    window.makeRealCall = () => {
-        const num = document.getElementById('dial-display').innerText;
-        if(!num) return;
-        document.getElementById('screen-active-call').classList.add('active');
-        document.getElementById('call-number').innerText = num;
-        startTimer();
-    };
-
-    window.hangUp = () => {
-        document.getElementById('screen-active-call').classList.remove('active');
-        clearInterval(timerInterval);
-    };
-
-    window.showToast = (msg) => {
-        const t = document.getElementById('toast');
-        t.innerText = msg; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
-    };
-
-    let timerInterval;
-    function startTimer() {
-        let sec = 0;
-        timerInterval = setInterval(() => {
-            sec++;
-            const m = Math.floor(sec/60).toString().padStart(2,'0');
-            const s = (sec%60).toString().padStart(2,'0');
-            document.getElementById('timer').innerText = `${m}:${s}`;
-        }, 1000);
-    }
+    window.deleteDigit = () => document.getElementById('dial-display').innerText = document.getElementById('dial-display').innerText.slice(0, -1);
+    window.makeRealCall = () => document.getElementById('screen-active-call').classList.add('active');
+    window.hangUp = () => document.getElementById('screen-active-call').classList.remove('active');
 </script>
 </body>
 </html>
