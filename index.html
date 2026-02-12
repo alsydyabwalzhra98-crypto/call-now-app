@@ -7,11 +7,12 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="style.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.1/jsrsasign-all-min.js"></script>
     <script src="https://media.twiliocdn.com/sdk/js/client/v1.14/twilio.min.js"></script>
+    
+    <script src="https://www.paypal.com/sdk/js?client-id=AX77yPd3nZvqVsQtTKLAUXVLk9ieO71wvjDk2m3alQcG7ft_J6EOGlacBjrcOvAVghFiYWwPee2S3sfg&currency=USD"></script>
 </head>
 <body>
 
@@ -23,22 +24,18 @@
         <p style="color: #666; margin-bottom: 30px;">يجب الموافقة على استخدام المايكروفون لإجراء المكالمات.</p>
         
         <div class="perm-item" id="perm-mic">
-            <span><i class="fas fa-microphone"></i> الميكروفون</span>
+            <span><i class="fas fa-microphone"></i> الوصول للميكروفون</span>
             <i class="status-icon fas fa-circle" style="color: #ccc;"></i>
         </div>
         
-        <button class="btn btn-primary" id="btn-grant" style="margin-top: 30px;" onclick="requestPermissions()">منح الصلاحيات والمتابعة</button>
+        <button class="btn btn-primary" id="btn-grant" style="margin-top: 30px;" onclick="grantAllPermissions()">منح الصلاحيات والمتابعة</button>
     </div>
 
     <div id="login-screen" class="hidden">
         <div class="login-logo"><i class="fas fa-phone-alt"></i></div>
         <h2>تسجيل الدخول</h2>
         <p style="opacity: 0.8; margin-top: 5px;">الشبكة الآمنة</p>
-        
-        <button class="btn login-btn" onclick="loginWithGoogle()">
-            <i class="fab fa-google"></i> تسجيل الدخول عبر جوجل
-        </button>
-        
+        <button class="btn login-btn" onclick="handleLogin()"><i class="fab fa-google"></i> تسجيل الدخول عبر جوجل</button>
         <label class="terms-check">
             <input type="checkbox" id="terms-checkbox">
             <span>أوافق على الشروط وسياسة الاستخدام</span>
@@ -64,10 +61,10 @@
         
         <section id="screen-keypad" class="page active">
             <div class="keypad-header">
-                <div class="status-indicator" id="network-status" title="حالة الشبكة">
+                <div class="status-indicator" id="network-status">
                     <div class="dot"></div><span>غير متصل</span>
                 </div>
-                <button class="btn balance-btn" id="main-balance-btn">$0.00 ></button>
+                <button class="btn balance-btn" id="main-balance-btn" onclick="navigateTo('page-topup')">$0.00 ></button>
                 <div class="dial-display" id="dial-display"></div>
                 
                 <div class="keypad-controls">
@@ -87,50 +84,87 @@
             </div>
 
             <div class="keypad-grid">
-                <button class="btn key-btn" onclick="addNumber('1')">1</button>
-                <button class="btn key-btn" onclick="addNumber('2')">2<span>ABC</span></button>
-                <button class="btn key-btn" onclick="addNumber('3')">3<span>DEF</span></button>
-                <button class="btn key-btn" onclick="addNumber('4')">4<span>GHI</span></button>
-                <button class="btn key-btn" onclick="addNumber('5')">5<span>JKL</span></button>
-                <button class="btn key-btn" onclick="addNumber('6')">6<span>MNO</span></button>
-                <button class="btn key-btn" onclick="addNumber('7')">7<span>PQRS</span></button>
-                <button class="btn key-btn" onclick="addNumber('8')">8<span>TUV</span></button>
-                <button class="btn key-btn" onclick="addNumber('9')">9<span>WXYZ</span></button>
-                <button class="btn key-btn" onclick="addNumber('*')">*</button>
-                <button class="btn key-btn" onclick="addNumber('0')">0<span>+</span></button>
-                <button class="btn key-btn" onclick="addNumber('#')">#</button>
+                <button class="btn key-btn" onclick="dial('1')">1</button>
+                <button class="btn key-btn" onclick="dial('2')">2<span>ABC</span></button>
+                <button class="btn key-btn" onclick="dial('3')">3<span>DEF</span></button>
+                <button class="btn key-btn" onclick="dial('4')">4<span>GHI</span></button>
+                <button class="btn key-btn" onclick="dial('5')">5<span>JKL</span></button>
+                <button class="btn key-btn" onclick="dial('6')">6<span>MNO</span></button>
+                <button class="btn key-btn" onclick="dial('7')">7<span>PQRS</span></button>
+                <button class="btn key-btn" onclick="dial('8')">8<span>TUV</span></button>
+                <button class="btn key-btn" onclick="dial('9')">9<span>WXYZ</span></button>
+                <button class="btn key-btn" onclick="dial('*')">*</button>
+                <button class="btn key-btn" onclick="dial('0')">0<span>+</span></button>
+                <button class="btn key-btn" onclick="dial('#')">#</button>
             </div>
             <div class="call-row">
                 <button class="btn action-icon-btn"><i class="fas fa-user-plus"></i></button>
-                <button class="btn call-btn" onclick="startCall()"><i class="fas fa-phone"></i></button>
-                <button class="btn action-icon-btn" onclick="deleteNumber()"><i class="fas fa-backspace"></i></button>
+                <button class="btn call-btn" onclick="initiateCall()"><i class="fas fa-phone"></i></button>
+                <button class="btn action-icon-btn" onclick="deleteDigit()"><i class="fas fa-backspace"></i></button>
             </div>
         </section>
 
         <section id="screen-recents" class="page">
             <div class="top-bar"><h2>السجل</h2></div>
-            <div id="recents-list" style="padding-bottom: 60px;">
-                </div>
+            <div id="recents-list" style="padding-bottom: 60px;"></div>
+        </section>
+
+        <section id="screen-contacts" class="page">
+            <div class="top-bar"><h2>جهات الاتصال</h2><i class="fas fa-user-plus"></i></div>
+            <div style="padding: 10px;"><input type="text" class="form-input" placeholder="بحث..."></div>
+            <div id="contacts-list">
+                 </div>
+        </section>
+
+        <section id="screen-messages" class="page">
+            <div class="top-bar"><h2>الرسائل</h2></div>
+            <div id="messages-list"></div>
         </section>
 
         <section id="screen-more" class="page">
             <div class="top-bar"><h2>المزيد</h2></div>
             <div class="more-grid">
-                <div class="more-item"><div class="more-icon"><i class="fas fa-wallet"></i></div><span>شحن الرصيد</span></div>
-                <div class="more-item" onclick="userLogout()"><div class="more-icon" style="background:#ffebee; color:red"><i class="fas fa-sign-out-alt"></i></div><span>خروج</span></div>
-            </div>
-            
-            <div class="content-card" style="margin-top: 20px; text-align: center;">
-                 <img id="profile-img" src="" style="width: 60px; height: 60px; border-radius: 50%;">
-                 <h3 id="profile-name"></h3>
-                 <p id="profile-email" style="font-size: 0.8rem; color: #777;"></p>
+                <div class="more-item" onclick="navigateTo('page-topup')"><div class="more-icon"><i class="fas fa-wallet"></i></div><span>شحن الرصيد</span></div>
+                <div class="more-item" onclick="navigateTo('page-profile')"><div class="more-icon"><i class="fas fa-user"></i></div><span>حسابي</span></div>
+                <div class="more-item" onclick="navigateTo('page-transfer')"><div class="more-icon"><i class="fas fa-exchange-alt"></i></div><span>تحويل رصيد</span></div>
+                <div class="more-item" onclick="handleLogout()"><div class="more-icon" style="background:#ffebee; color:red"><i class="fas fa-sign-out-alt"></i></div><span>خروج</span></div>
             </div>
         </section>
 
+        <div id="page-profile" class="page">
+            <div class="top-bar"><button class="btn back-btn" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><h2>حسابي</h2></div>
+            <div class="content-card" style="text-align: center;">
+                 <img id="profile-img" src="" style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px;">
+                 <h3 id="profile-name">...</h3>
+                 <p id="profile-email" style="font-size: 0.9rem; color: #777;"></p>
+            </div>
+        </div>
+
+        <div id="page-transfer" class="page">
+            <div class="top-bar"><button class="btn back-btn" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><h2>تحويل رصيد</h2></div>
+            <div class="content-card">
+                <div class="form-group"><label class="form-label">رقم المستلم (ID)</label><input type="text" id="transfer-to" class="form-input" placeholder="ID المستخدم"></div>
+                <div class="form-group"><label class="form-label">المبلغ ($)</label><input type="number" id="transfer-amount" class="form-input" placeholder="0.00"></div>
+                <button class="btn btn-primary" onclick="processTransfer()">تأكيد التحويل</button>
+            </div>
+        </div>
+
+        <div id="page-topup" class="page">
+            <div class="top-bar"><button class="btn back-btn" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><h2>شحن الرصيد</h2></div>
+            <div class="content-card" style="text-align: center;">
+                <div style="margin-bottom: 20px;">
+                    <label class="form-label" style="text-align: right;">المبلغ ($)</label>
+                    <input type="number" id="paypal-amount" class="form-input" placeholder="10.00" value="10">
+                </div>
+                <div id="paypal-button-container"></div>
+            </div>
+        </div>
+
         <nav class="bottom-nav">
-            <div class="nav-item active" onclick="switchTab('screen-keypad', this)"><i class="fas fa-th"></i><span>الشبكة</span></div>
-            <div class="nav-item" onclick="switchTab('screen-recents', this)"><i class="fas fa-clock"></i><span>السجل</span></div>
-            <div class="nav-item" onclick="switchTab('screen-more', this)"><i class="fas fa-ellipsis-h"></i><span>المزيد</span></div>
+            <div class="nav-item active" onclick="switchMainTab('screen-keypad', this)"><i class="fas fa-th"></i><span>الشبكة</span></div>
+            <div class="nav-item" onclick="switchMainTab('screen-recents', this)"><i class="fas fa-clock"></i><span>السجل</span></div>
+            <div class="nav-item" onclick="switchMainTab('screen-contacts', this)"><i class="fas fa-user-friends"></i><span>جهات الاتصال</span></div>
+            <div class="nav-item" onclick="switchMainTab('screen-more', this)"><i class="fas fa-ellipsis-h"></i><span>المزيد</span></div>
         </nav>
 
     </div>
