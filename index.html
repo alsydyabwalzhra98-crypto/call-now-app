@@ -3,451 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Private Dialer Pro</title>
-
+    <title>تطبيق الاتصال الاحترافي</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.1/jsrsasign-all-min.js"></script>
     <script src="https://media.twiliocdn.com/sdk/js/client/v1.14/twilio.min.js"></script>
-    <script src="https://www.paypal.com/sdk/js?client-id=AWaJQWw1WU4LOyK2j5jrSA34VWrSPXRXRX6KrTb2UP8yBQqVKk2fohlccSJ65IvQEKvV_KLwrO-dA5Xn&currency=USD"></script>
-
-    <style>
-        :root { --primary: #1565C0; --dark: #0D47A1; --bg: #f4f4f9; --white: #fff; --green: #4CAF50; --red: #F44336; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-        body { background: #ddd; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
-        
-        #app { width: 100%; max-width: 420px; background: var(--bg); height: 100%; position: relative; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-        
-        /* شاشات كاملة */
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 10; display: none; flex-direction: column; }
-        .screen.active { display: flex; }
-        .screen.overlay { z-index: 50; }
-
-        /* الأزرار والعناصر */
-        .btn { border: none; outline: none; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn:active { transform: scale(0.95); }
-        
-        /* شاشة الأذونات */
-        #perm-screen { background: var(--white); z-index: 100; align-items: center; justify-content: center; padding: 30px; text-align: center; }
-        .perm-row { width: 100%; padding: 15px; margin: 10px 0; background: #f5f5f5; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .perm-row.done { background: #e8f5e9; color: var(--green); border: 1px solid var(--green); }
-
-        /* لوحة الاتصال */
-        .dial-screen { flex: 1; display: flex; flex-direction: column; padding-bottom: 70px; }
-        .dial-display { font-size: 2.5rem; text-align: center; padding: 30px 10px; color: #333; min-height: 100px; letter-spacing: 2px; font-weight: bold; }
-        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 40px; margin-bottom: 20px; }
-        .key { width: 70px; height: 70px; background: transparent; border-radius: 50%; font-size: 1.5rem; color: #333; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .key span { font-size: 0.7rem; color: #999; margin-top: -5px; }
-        .key:active { background: #eee; }
-        .call-btn { width: 70px; height: 70px; background: var(--green); color: white; border-radius: 50%; font-size: 1.8rem; box-shadow: 0 4px 10px rgba(76,175,80,0.4); }
-
-        /* شاشة الاتصال النشط */
-        #active-call-screen { background: linear-gradient(180deg, #202124, #3c4043); color: white; align-items: center; justify-content: space-between; padding: 50px 20px; z-index: 200; }
-        .avatar-call { width: 120px; height: 120px; background: #5f6368; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 20px; }
-        
-        /* النافبار */
-        .navbar { position: absolute; bottom: 0; width: 100%; height: 65px; background: var(--white); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; z-index: 40; }
-        .nav-item { color: #999; font-size: 1.4rem; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .nav-item span { font-size: 0.7rem; }
-        .nav-item.active { color: var(--primary); }
-
-        .toast { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 20px; opacity: 0; transition: 0.3s; z-index: 1000; pointer-events: none; width: max-content; }
-        .show-toast { opacity: 1; bottom: 90px; }
-    </style>
 </head>
 <body>
 
-<div id="app">
+<div id="app-container">
 
-    <div id="perm-screen" class="screen active">
-        <i class="fas fa-shield-alt" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
-        <h2>إعداد الهاتف</h2>
-        <p style="color: #666; margin-bottom: 30px;">لتحويل المتصفح إلى هاتف حقيقي، نحتاج للصلاحيات التالية:</p>
+    <div id="permission-screen">
+        <div style="font-size: 3rem; color: var(--primary-color); margin-bottom: 20px;"><i class="fas fa-shield-alt"></i></div>
+        <h2 style="margin-bottom: 10px;">الأذونات المطلوبة</h2>
+        <p style="color: #666; margin-bottom: 30px;">يجب الموافقة على استخدام المايكروفون لإجراء المكالمات.</p>
         
-        <div class="perm-row" id="p-mic">
+        <div class="perm-item" id="perm-mic">
             <span><i class="fas fa-microphone"></i> الميكروفون</span>
-            <i class="far fa-circle status-icon"></i>
-        </div>
-        <div class="perm-row" id="p-contacts">
-            <span><i class="fas fa-address-book"></i> جهات الاتصال</span>
-            <i class="far fa-circle status-icon"></i>
-        </div>
-
-        <button class="btn" onclick="startPermissions()" style="width: 100%; background: var(--primary); color: white; padding: 15px; border-radius: 50px; font-weight: bold; margin-top: 20px; font-size: 1.1rem;">
-            منح الصلاحيات والدخول
-        </button>
-    </div>
-
-    <div id="login-screen" class="screen">
-        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <div style="width:100px; height:100px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:3rem; margin-bottom:20px;">
-                <i class="fas fa-phone-alt"></i>
-            </div>
-            <h2>Private Dialer</h2>
-            <p style="color:#777;">اتصال آمن ومحمي</p>
-        </div>
-        <div style="padding: 30px;">
-            <button class="btn" onclick="doLogin()" style="width: 100%; background: white; border: 1px solid #ddd; padding: 15px; border-radius: 50px; font-weight: bold; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> تسجيل الدخول بجوجل
-            </button>
-            <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: #999;">بالمتابعة أنت توافق على الشروط</p>
-        </div>
-    </div>
-
-    <div id="main-app" class="screen" style="display: none;"> <div id="tab-dialer" class="dial-screen">
-            <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <div style="background: #e3f2fd; color: var(--primary); padding: 5px 12px; border-radius: 15px; font-weight: bold; font-size: 0.9rem;">
-                    رصيدك: <span id="balance-el">$0.00</span>
-                </div>
-                <div class="status-dot" style="width: 10px; height: 10px; background: #ddd; border-radius: 50%;" id="conn-status"></div>
-            </div>
-
-            <div class="dial-display" id="dial-display"></div>
-
-            <div class="keypad">
-                <button class="btn key" onclick="press('1')">1</button>
-                <button class="btn key" onclick="press('2')">2<span>ABC</span></button>
-                <button class="btn key" onclick="press('3')">3<span>DEF</span></button>
-                <button class="btn key" onclick="press('4')">4<span>GHI</span></button>
-                <button class="btn key" onclick="press('5')">5<span>JKL</span></button>
-                <button class="btn key" onclick="press('6')">6<span>MNO</span></button>
-                <button class="btn key" onclick="press('7')">7<span>PQRS</span></button>
-                <button class="btn key" onclick="press('8')">8<span>TUV</span></button>
-                <button class="btn key" onclick="press('9')">9<span>WXYZ</span></button>
-                <button class="btn key" onclick="press('*')">*</button>
-                <button class="btn key" onclick="press('0')">0<span>+</span></button>
-                <button class="btn key" onclick="press('#')">#</button>
-            </div>
-
-            <div style="display: flex; justify-content: center; align-items: center; gap: 30px;">
-                <button class="btn" style="color: var(--primary); font-size: 1.5rem;" onclick="openContacts()"><i class="fas fa-user-plus"></i></button>
-                <button class="btn call-btn" onclick="makeCall()"><i class="fas fa-phone"></i></button>
-                <button class="btn" style="color: var(--red); font-size: 1.5rem;" onclick="del()"><i class="fas fa-backspace"></i></button>
-            </div>
-        </div>
-
-        <div id="tab-profile" class="dial-screen" style="display: none; padding: 20px;">
-            <h2>حسابي</h2>
-            <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; margin-top: 20px;">
-                <img id="u-img" src="" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px;">
-                <h3 id="u-name">...</h3>
-                <p id="u-email" style="color:#777; font-size:0.9rem;">...</p>
-                <div style="margin: 20px 0; border-top: 1px solid #eee; padding-top: 10px;">
-                    <p style="color: #555;">رقمك الافتراضي:</p>
-                    <h3 style="color: var(--primary);">+1 (236) 506-6055</h3>
-                </div>
-            </div>
-            <button class="btn" onclick="logout()" style="width: 100%; padding: 15px; color: var(--red); background: white; margin-top: 20px; border-radius: 10px;">تسجيل خروج</button>
-        </div>
-
-        <div class="navbar">
-            <div class="nav-item active" onclick="switchTab('dialer', this)"><i class="fas fa-th"></i><span>لوحة</span></div>
-            <div class="nav-item" onclick="toast('قريباً: السجل')"><i class="fas fa-clock"></i><span>السجل</span></div>
-            <div class="nav-item" onclick="switchTab('profile', this)"><i class="fas fa-user"></i><span>حسابي</span></div>
-        </div>
-    </div>
-
-    <div id="active-call-screen" class="screen overlay">
-        <div style="text-align: center; margin-top: 50px;">
-            <div class="avatar-call"><i class="fas fa-user"></i></div>
-            <h2 id="call-number-disp">...</h2>
-            <p id="call-status">جاري الاتصال...</p>
-            <h1 id="call-timer" style="margin-top: 10px; display: none;">00:00</h1>
+            <i class="status-icon fas fa-circle" style="color: #ccc;"></i>
         </div>
         
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 300px; margin-bottom: 30px;">
-            <div class="btn" style="flex-direction: column; color: white;"><i class="fas fa-microphone-slash" style="font-size: 1.5rem; margin-bottom: 5px;"></i><span>كتم</span></div>
-            <div class="btn" style="flex-direction: column; color: white;"><i class="fas fa-th" style="font-size: 1.5rem; margin-bottom: 5px;"></i><span>لوحة</span></div>
-            <div class="btn" style="flex-direction: column; color: white;"><i class="fas fa-volume-up" style="font-size: 1.5rem; margin-bottom: 5px;"></i><span>سبيكر</span></div>
-        </div>
-
-        <button class="btn" onclick="hangup()" style="background: var(--red); width: 70px; height: 70px; border-radius: 50%; font-size: 2rem; color: white; margin-bottom: 30px;">
-            <i class="fas fa-phone-slash"></i>
-        </button>
+        <button class="btn btn-primary" id="btn-grant" style="margin-top: 30px;" onclick="requestPermissions()">منح الصلاحيات والمتابعة</button>
     </div>
 
-    <div id="toast" class="toast">رسالة</div>
+    <div id="login-screen" class="hidden">
+        <div class="login-logo"><i class="fas fa-phone-alt"></i></div>
+        <h2>تسجيل الدخول</h2>
+        <p style="opacity: 0.8; margin-top: 5px;">الشبكة الآمنة</p>
+        
+        <button class="btn login-btn" onclick="loginWithGoogle()">
+            <i class="fab fa-google"></i> تسجيل الدخول عبر جوجل
+        </button>
+        
+        <label class="terms-check">
+            <input type="checkbox" id="terms-checkbox">
+            <span>أوافق على الشروط وسياسة الاستخدام</span>
+        </label>
+    </div>
+
+    <div id="screen-active-call">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div class="caller-avatar"><i class="fas fa-user"></i></div>
+            <div class="caller-name" id="active-caller-name">...</div>
+            <div class="caller-status" id="call-status-text">جاري الاتصال...</div>
+            <div class="caller-status" id="call-timer" style="font-size: 1.5rem; font-weight: bold; margin-top:10px">00:00</div>
+        </div>
+        <div class="call-actions">
+            <button class="btn call-action-btn" onclick="toggleMute()"><i class="fas fa-microphone-slash"></i><span class="call-action-label">كتم</span></button>
+            <button class="btn call-action-btn"><i class="fas fa-th"></i><span class="call-action-label">لوحة</span></button>
+            <button class="btn call-action-btn"><i class="fas fa-volume-up"></i><span class="call-action-label">سماعة</span></button>
+        </div>
+        <button class="btn end-call-btn" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+    </div>
+
+    <div id="main-app" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
+        
+        <section id="screen-keypad" class="page active">
+            <div class="keypad-header">
+                <div class="status-indicator" id="network-status" title="حالة الشبكة">
+                    <div class="dot"></div><span>غير متصل</span>
+                </div>
+                <button class="btn balance-btn" id="main-balance-btn">$0.00 ></button>
+                <div class="dial-display" id="dial-display"></div>
+                
+                <div class="keypad-controls">
+                    <div class="toggle-row">
+                        <div class="toggle-label">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="anon-toggle" onchange="toggleAliasInput()">
+                                <span class="slider"></span>
+                            </label>
+                            <span>مجهول</span>
+                        </div>
+                    </div>
+                    <div id="alias-input-wrapper">
+                        <input type="text" id="alias-input-field" placeholder="اكتب الاسم البديل..." oninput="updateAliasValue()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="keypad-grid">
+                <button class="btn key-btn" onclick="addNumber('1')">1</button>
+                <button class="btn key-btn" onclick="addNumber('2')">2<span>ABC</span></button>
+                <button class="btn key-btn" onclick="addNumber('3')">3<span>DEF</span></button>
+                <button class="btn key-btn" onclick="addNumber('4')">4<span>GHI</span></button>
+                <button class="btn key-btn" onclick="addNumber('5')">5<span>JKL</span></button>
+                <button class="btn key-btn" onclick="addNumber('6')">6<span>MNO</span></button>
+                <button class="btn key-btn" onclick="addNumber('7')">7<span>PQRS</span></button>
+                <button class="btn key-btn" onclick="addNumber('8')">8<span>TUV</span></button>
+                <button class="btn key-btn" onclick="addNumber('9')">9<span>WXYZ</span></button>
+                <button class="btn key-btn" onclick="addNumber('*')">*</button>
+                <button class="btn key-btn" onclick="addNumber('0')">0<span>+</span></button>
+                <button class="btn key-btn" onclick="addNumber('#')">#</button>
+            </div>
+            <div class="call-row">
+                <button class="btn action-icon-btn"><i class="fas fa-user-plus"></i></button>
+                <button class="btn call-btn" onclick="startCall()"><i class="fas fa-phone"></i></button>
+                <button class="btn action-icon-btn" onclick="deleteNumber()"><i class="fas fa-backspace"></i></button>
+            </div>
+        </section>
+
+        <section id="screen-recents" class="page">
+            <div class="top-bar"><h2>السجل</h2></div>
+            <div id="recents-list" style="padding-bottom: 60px;">
+                </div>
+        </section>
+
+        <section id="screen-more" class="page">
+            <div class="top-bar"><h2>المزيد</h2></div>
+            <div class="more-grid">
+                <div class="more-item"><div class="more-icon"><i class="fas fa-wallet"></i></div><span>شحن الرصيد</span></div>
+                <div class="more-item" onclick="userLogout()"><div class="more-icon" style="background:#ffebee; color:red"><i class="fas fa-sign-out-alt"></i></div><span>خروج</span></div>
+            </div>
+            
+            <div class="content-card" style="margin-top: 20px; text-align: center;">
+                 <img id="profile-img" src="" style="width: 60px; height: 60px; border-radius: 50%;">
+                 <h3 id="profile-name"></h3>
+                 <p id="profile-email" style="font-size: 0.8rem; color: #777;"></p>
+            </div>
+        </section>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('screen-keypad', this)"><i class="fas fa-th"></i><span>الشبكة</span></div>
+            <div class="nav-item" onclick="switchTab('screen-recents', this)"><i class="fas fa-clock"></i><span>السجل</span></div>
+            <div class="nav-item" onclick="switchTab('screen-more', this)"><i class="fas fa-ellipsis-h"></i><span>المزيد</span></div>
+        </nav>
+
+    </div>
+
+    <div id="toast" class="toast"></div>
 
 </div>
 
-<script type="module">
-    // استيراد Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // إعدادات Firebase الخاصة بك
-    const firebaseConfig = {
-        apiKey: "AIzaSyD8hrO2kX1zXaA46PImzMGqOt4iTwhXKI0",
-        authDomain: "call-now-24582.firebaseapp.com",
-        projectId: "call-now-24582",
-        storageBucket: "call-now-24582.firebasestorage.app",
-        messagingSenderId: "982107544824",
-        appId: "1:982107544824:web:c5b6806042ba44ff896f0d"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    let currentUser = null;
-    let twilioDevice = null;
-    let currentConnection = null;
-
-    // --- 1. مفاتيح Twilio (للاستخدام المحلي) ---
-    // تحذير: في بيئة الإنتاج الحقيقية، هذه المفاتيح يجب أن تكون في سيرفر.
-    const TWILIO_CONFIG = {
-        accountSid: "AC556940721ff0c319d28a2b7e89ee4b78",
-        apiKeySid: "SKfdd4fe38d4b4a70a8bcc14e0fb128b79", 
-        apiKeySecret: "Tm50wjJYwoCoZ84iyifLKd7CdnkCGn6T",
-        twimlAppSid: "APXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" // **مهم جداً: ضع SID التطبيق الذي أنشأته هنا**
-    };
-
-    // --- 2. منطق الأذونات الحقيقي ---
-    window.startPermissions = async () => {
-        const btn = document.querySelector('#perm-screen button');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الطلب...';
-        
-        try {
-            // طلب الميكروفون (سيظهر رسالة النظام الأصلية)
-            await navigator.mediaDevices.getUserMedia({ audio: true });
-            document.getElementById('p-mic').classList.add('done');
-            document.getElementById('p-mic').querySelector('.status-icon').className = 'fas fa-check-circle';
-
-            // محاولة طلب جهات الاتصال (ميزة تجريبية في كروم أندرويد)
-            // إذا لم تكن مدعومة سنتجاوزها دون خطأ
-            if ('contacts' in navigator && 'ContactsManager' in window) {
-               // لا نطلبها الآن حتى يضغط المستخدم زر جهات الاتصال لكي لا يزعجه
-               document.getElementById('p-contacts').classList.add('done'); // نعتبرها تمت للمرور
-               document.getElementById('p-contacts').querySelector('.status-icon').className = 'fas fa-check-circle';
-            } else {
-                // المتصفح لا يدعم الوصول المباشر لجهات الاتصال
-                document.getElementById('p-contacts').innerHTML = '<span><i class="fas fa-address-book"></i> الوصول السحابي</span><i class="fas fa-check-circle" style="color:green"></i>';
-                document.getElementById('p-contacts').classList.add('done');
-            }
-
-            setTimeout(() => {
-                document.getElementById('perm-screen').classList.remove('active');
-                checkLoginStatus();
-            }, 1000);
-
-        } catch (err) {
-            console.error(err);
-            alert("عذراً، يجب السماح بالميكروفون لإجراء المكالمات. يرجى التأكد من إعدادات المتصفح.");
-            btn.innerText = "حاول مرة أخرى";
-        }
-    };
-
-    // --- 3. تسجيل الدخول وقاعدة البيانات ---
-    function checkLoginStatus() {
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                loadUserData(user);
-                document.getElementById('login-screen').classList.remove('active');
-                document.getElementById('main-app').style.display = 'flex'; // إظهار التطبيق
-                initTwilio(); // بدء اتصال Twilio
-            } else {
-                document.getElementById('login-screen').classList.add('active');
-            }
-        });
-    }
-
-    window.doLogin = () => {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).catch(e => alert(e.message));
-    };
-
-    window.logout = () => signOut(auth).then(() => window.location.reload());
-
-    async function loadUserData(user) {
-        // تحديث الواجهة
-        document.getElementById('u-name').innerText = user.displayName;
-        document.getElementById('u-email').innerText = user.email;
-        document.getElementById('u-img').src = user.photoURL;
-
-        // التحقق من قاعدة البيانات
-        const userRef = doc(db, "users", user.uid);
-        
-        // استماع فوري للتغيرات في الرصيد
-        onSnapshot(userRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                document.getElementById('balance-el').innerText = `$${data.balance.toFixed(2)}`;
-            } else {
-                // مستخدم جديد: إنشاء سجل ومنحه رصيد ورقم
-                setDoc(userRef, {
-                    balance: 1.00, // رصيد هدية
-                    email: user.email,
-                    virtualNumber: '+12365066055',
-                    createdAt: new Date()
-                });
-            }
-        });
-    }
-
-    // --- 4. منطق Twilio (Client-Side Token Generation) ---
-    // هذه الدالة تولد التوكن محلياً لتجاوز الحاجة لسيرفر backend
-    function generateAccessToken() {
-        const header = { alg: 'HS256', typ: 'JWT' };
-        const now = Math.floor(Date.now() / 1000);
-        const exp = now + 3600; // ساعة واحدة صلاحية
-
-        const payload = {
-            jti: TWILIO_CONFIG.apiKeySid + '-' + now,
-            iss: TWILIO_CONFIG.apiKeySid,
-            sub: TWILIO_CONFIG.accountSid,
-            exp: exp,
-            grants: {
-                voice: {
-                    outgoing: { application_sid: TWILIO_CONFIG.twimlAppSid },
-                    incoming: { allow: true }
-                },
-                identity: currentUser ? currentUser.uid : 'unknown_user'
-            }
-        };
-
-        // توقيع التوكن باستخدام المكتبة المستوردة
-        const sHeader = JSON.stringify(header);
-        const sPayload = JSON.stringify(payload);
-        const sJWT = KJUR.jws.JWS.sign("HS256", sHeader, sPayload, TWILIO_CONFIG.apiKeySecret);
-        return sJWT;
-    }
-
-    function initTwilio() {
-        if(!currentUser) return;
-        try {
-            const token = generateAccessToken();
-            console.log("Token Generated:", token);
-            
-            twilioDevice = new Twilio.Device(token, {
-                codecPreferences: ['opus', 'pcmu'],
-                fakeLocalDTMF: true,
-                enableRingingState: true
-            });
-
-            twilioDevice.on('ready', () => {
-                document.getElementById('conn-status').style.background = '#4CAF50'; // أخضر
-                toast("متصل بالشبكة");
-            });
-
-            twilioDevice.on('error', (error) => {
-                console.error("Twilio Error:", error);
-                document.getElementById('conn-status').style.background = 'red';
-                if(error.code === 31205) toast("الرجاء تحديث مفتاح TwiML SID"); // خطأ عدم الربط
-            });
-            
-            // استقبال المكالمات (إذا تم تفعيل الرقم)
-            twilioDevice.on('incoming', (conn) => {
-                // كود استقبال المكالمات (يمكن إضافته لاحقاً)
-                conn.accept();
-            });
-
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    // --- 5. وظائف واجهة المستخدم والاتصال ---
-    window.press = (num) => {
-        const display = document.getElementById('dial-display');
-        if (display.innerText.length < 15) display.innerText += num;
-        // صوت النقر (اختياري)
-    };
-
-    window.del = () => {
-        const d = document.getElementById('dial-display');
-        d.innerText = d.innerText.slice(0, -1);
-    };
-
-    // فتح جهات الاتصال الحقيقية (أندرويد)
-    window.openContacts = async () => {
-        if ('contacts' in navigator && 'ContactsManager' in window) {
-            try {
-                const props = ['name', 'tel'];
-                const contacts = await navigator.contacts.select(props, { multiple: false });
-                if (contacts.length) {
-                    const num = contacts[0].tel[0].replace(/\s/g, ''); // تنظيف الرقم
-                    document.getElementById('dial-display').innerText = num;
-                }
-            } catch (ex) {
-                toast("لم يتم اختيار جهة اتصال");
-            }
-        } else {
-            toast("اختر جهة اتصال يدوياً (غير مدعوم في هذا المتصفح)");
-        }
-    };
-
-    window.makeCall = async () => {
-        const number = document.getElementById('dial-display').innerText;
-        if (!number) { toast("أدخل رقماً أولاً"); return; }
-        if (!twilioDevice) { toast("جاري الاتصال بالشبكة.. انتظر"); initTwilio(); return; }
-
-        document.getElementById('active-call-screen').classList.add('active');
-        document.getElementById('call-number-disp').innerText = number;
-        document.getElementById('call-status').innerText = "جاري الاتصال...";
-
-        const params = { To: number };
-        
-        // الاتصال الفعلي
-        currentConnection = twilioDevice.connect(params);
-
-        currentConnection.on('accept', () => {
-            document.getElementById('call-status').innerText = "متصل";
-            document.getElementById('call-timer').style.display = 'block';
-            startTimer();
-        });
-
-        currentConnection.on('disconnect', () => {
-            window.hangup();
-        });
-
-        currentConnection.on('error', (err) => {
-            console.log(err);
-            toast("فشل الاتصال: تأكد من TwiML");
-            window.hangup();
-        });
-    };
-
-    window.hangup = () => {
-        if (currentConnection) currentConnection.disconnect();
-        document.getElementById('active-call-screen').classList.remove('active');
-        document.getElementById('call-timer').style.display = 'none';
-        stopTimer();
-        
-        // خصم تكلفة (مثال)
-        const userRef = doc(db, "users", currentUser.uid);
-        updateDoc(userRef, { balance: increment(-0.05) }); // خصم 5 سنت
-    };
-
-    // الموقت
-    let timerInt;
-    function startTimer() {
-        let sec = 0;
-        timerInt = setInterval(() => {
-            sec++;
-            let m = Math.floor(sec/60).toString().padStart(2,'0');
-            let s = (sec%60).toString().padStart(2,'0');
-            document.getElementById('call-timer').innerText = `${m}:${s}`;
-        }, 1000);
-    }
-    function stopTimer() { clearInterval(timerInt); }
-
-    // التبديل بين التبويبات
-    window.switchTab = (tabId, el) => {
-        document.querySelectorAll('.dial-screen').forEach(s => s.style.display = 'none');
-        document.getElementById('tab-' + tabId).style.display = 'flex';
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
-    };
-
-    window.toast = (msg) => {
-        const t = document.getElementById('toast');
-        t.innerText = msg;
-        t.classList.add('show-toast');
-        setTimeout(() => t.classList.remove('show-toast'), 3000);
-    };
-
-</script>
+<script type="module" src="index.js"></script>
 </body>
 </html>
