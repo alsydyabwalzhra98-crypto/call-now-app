@@ -1,12 +1,13 @@
 {
-  "name": "replit-project",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "private-dialer-pro",
+  "version": "2.0.0",
+  "description": "Professional Calling App",
+  "main": "index.html",
   "scripts": {
-    "start": "node index.js"
+    "start": "serve"
   },
   "dependencies": {
-    "express": "^4.22.1"
+    "firebase": "^10.7.1",
+    "twilio-client": "^1.14.0"
   }
 }
