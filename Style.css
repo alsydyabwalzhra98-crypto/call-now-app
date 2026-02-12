@@ -48,9 +48,12 @@ body { background-color: #e0e0e0; display: flex; justify-content: center; align-
 .login-btn { background-color: var(--white); color: #333; padding: 12px 24px; border-radius: 50px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-top: 2rem; width: 100%; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 .terms-check { margin-top: 1.5rem; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; opacity: 0.9; }
 
-/* الصفحات */
+/* الصفحات والعناصر */
 .page { flex: 1; overflow-y: auto; display: none; background: var(--bg-color); padding-bottom: 70px; }
 .page.active { display: flex; flex-direction: column; }
+
+.top-bar { background-color: var(--primary-color); color: var(--white); padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.back-btn { background: none; color: white; font-size: 1.2rem; }
 
 /* لوحة الاتصال */
 .keypad-header { padding: 20px; text-align: center; position: relative; background: white; }
@@ -96,11 +99,15 @@ input:checked + .slider:before { transform: translateX(-20px); }
 .end-call-btn { background: var(--accent-red); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4); }
 
 /* القوائم والمزيد */
-.top-bar { background-color: var(--primary-color); color: var(--white); padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .list-item { background: var(--white); padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 15px; }
 .more-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px; }
 .more-item { background: var(--white); padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; }
-.more-icon { width: 40px; height: 40px; background: var(--primary-light); color: var(--primary-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin: 0 auto 10px; }
+.more-icon { width: 40px; height: 40px; background: #e3f2fd; color: var(--primary-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin: 0 auto 10px; }
+
+.content-card { background: var(--white); margin: 15px; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.form-group { margin-bottom: 15px; }
+.form-label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--text-dark); }
+.form-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; font-family: inherit; }
 
 /* النافبار */
 .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: var(--white); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; z-index: 20; }
